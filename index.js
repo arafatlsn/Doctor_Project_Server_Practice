@@ -5,6 +5,7 @@ const cors = require('cors')
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 app.use(cors());
+app.use(express.json())
 require('dotenv').config();
 
 
@@ -16,11 +17,28 @@ async function run () {
 
     await client.connect();
     const appointementCollection = client.db('dental-Practice').collection('appointments');
+    const appointementPatients = client.db('dental-Practice').collection('patients')
 
+    // load all apointments 
     app.get('/appointments', async(req, res) => {
       const query = {};
       const cursor = appointementCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result)
+    })
+    // load date wise patients appointments
+    app.get('/patients', async(req, res) => {
+      const date = req.query.date;
+      const query = {date};
+      const cursor = appointementPatients.find(query);
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+    
+    // post an appointment
+    app.post('/postpatientinfo', async(req, res) => {
+      const patientInfo = req.body;
+      const result = await appointementPatients.insertOne(patientInfo)
       res.send(result)
     })
 
